@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"time"
 
@@ -45,6 +46,13 @@ func main() {
 
 	sessionSecret := os.Getenv("SESSION_SECRET")
 	store := cookie.NewStore([]byte(sessionSecret))
+	store.Options(sessions.Options{
+		MaxAge:   60 * 60 * 24 * 7,
+		Path:     "/",
+		HttpOnly: true,
+		Secure:   true,
+		SameSite: http.SameSiteNoneMode,
+	})
 	r.Use(sessions.Sessions("mindelixir", store))
 
 	AllowOrigin := os.Getenv("ALLOW_ORIGIN")
