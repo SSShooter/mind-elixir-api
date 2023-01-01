@@ -83,5 +83,9 @@ func main() {
 		c.JSON(200, gin.H{"msg": "logout"})
 	})
 
-	r.Run("0.0.0.0:7001") // listen and serve on 0.0.0.0:8080
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "7001"
+	}
+	r.Run(":" + port)
 }
