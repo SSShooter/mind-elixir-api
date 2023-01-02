@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -17,10 +16,7 @@ import (
 func AddMapRoutes(rg *gin.RouterGroup, mapColl *mongo.Collection) {
 	rg.GET("/:id", func(c *gin.Context) {
 		id, _ := primitive.ObjectIDFromHex(c.Param("id"))
-		session := sessions.Default(c)
-		loginId := session.Get("loginId")
-		fmt.Printf("id:%s", id)
-		fmt.Printf("loginId:%s", loginId)
+		loginId := c.MustGet("loginId").(int)
 		var result bson.M
 		err := mapColl.FindOne(
 			context.TODO(),
@@ -37,8 +33,7 @@ func AddMapRoutes(rg *gin.RouterGroup, mapColl *mongo.Collection) {
 		id, _ := primitive.ObjectIDFromHex(c.Param("id"))
 		var data map[string]interface{}
 		c.ShouldBind(&data)
-		session := sessions.Default(c)
-		loginId := session.Get("loginId")
+		loginId := c.MustGet("loginId").(int)
 		var result bson.M
 		update := bson.D{{"$set", data}}
 		err := mapColl.FindOneAndUpdate(
@@ -55,10 +50,7 @@ func AddMapRoutes(rg *gin.RouterGroup, mapColl *mongo.Collection) {
 
 	rg.DELETE("/:id", func(c *gin.Context) {
 		id, _ := primitive.ObjectIDFromHex(c.Param("id"))
-		session := sessions.Default(c)
-		loginId := session.Get("loginId")
-		fmt.Printf("id:%s", id)
-		fmt.Printf("loginId:%s", loginId)
+		loginId := c.MustGet("loginId").(int)
 		var result bson.M
 		err := mapColl.FindOneAndDelete(
 			context.TODO(),
@@ -72,8 +64,7 @@ func AddMapRoutes(rg *gin.RouterGroup, mapColl *mongo.Collection) {
 	})
 
 	rg.GET("", func(c *gin.Context) {
-		session := sessions.Default(c)
-		loginId := session.Get("loginId")
+		loginId := c.MustGet("loginId").(int)
 		cursor, err := mapColl.Find(
 			context.TODO(),
 			bson.D{{"author", loginId}},
@@ -92,9 +83,8 @@ func AddMapRoutes(rg *gin.RouterGroup, mapColl *mongo.Collection) {
 	rg.POST("", func(c *gin.Context) {
 		var mapData *models.Map
 		c.ShouldBind(&mapData)
-		session := sessions.Default(c)
-		loginId := session.Get("loginId")
-		mapData.Author = loginId.(int)
+		loginId := c.MustGet("loginId").(int)
+		mapData.Author = loginId
 		fmt.Printf("id:%s", loginId)
 
 		res, err := mapColl.InsertOne(context.TODO(), mapData)
