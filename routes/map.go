@@ -2,28 +2,16 @@ package routes
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+
+	"github.com/SSShooter/mind-elixir-backend-go/models"
 )
-
-type Map struct {
-	Name    string
-	Content map[string]interface{}
-	Author  int
-}
-
-type PrivateMapFilter struct {
-	_id    primitive.ObjectID
-	author int
-}
-
-type PrivateMapsFilter struct {
-	author int
-}
 
 func AddMapRoutes(rg *gin.RouterGroup, mapColl *mongo.Collection) {
 	rg.GET("/:id", func(c *gin.Context) {
@@ -32,7 +20,7 @@ func AddMapRoutes(rg *gin.RouterGroup, mapColl *mongo.Collection) {
 		var result bson.M
 		err := mapColl.FindOne(
 			context.TODO(),
-			PrivateMapFilter{id, loginId},
+			bson.D{{"_id", id}, {"author", loginId}},
 		).Decode(&result)
 		if err != nil {
 			c.JSON(200, gin.H{"error": err})
@@ -50,7 +38,7 @@ func AddMapRoutes(rg *gin.RouterGroup, mapColl *mongo.Collection) {
 		update := bson.D{{"$set", data}}
 		err := mapColl.FindOneAndUpdate(
 			context.TODO(),
-			PrivateMapFilter{id, loginId},
+			bson.D{{"_id", id}, {"author", loginId}},
 			update,
 		).Decode(&result)
 		if err != nil {
@@ -66,7 +54,7 @@ func AddMapRoutes(rg *gin.RouterGroup, mapColl *mongo.Collection) {
 		var result bson.M
 		err := mapColl.FindOneAndDelete(
 			context.TODO(),
-			PrivateMapFilter{id, loginId},
+			bson.D{{"_id", id}, {"author", loginId}},
 		).Decode(&result)
 		if err != nil {
 			c.JSON(200, gin.H{"error": err})
@@ -79,7 +67,7 @@ func AddMapRoutes(rg *gin.RouterGroup, mapColl *mongo.Collection) {
 		loginId := c.MustGet("loginId").(int)
 		cursor, err := mapColl.Find(
 			context.TODO(),
-			PrivateMapsFilter{loginId},
+			bson.D{{"author", loginId}},
 		)
 		if err != nil {
 			c.JSON(200, gin.H{"error": err})
@@ -93,10 +81,11 @@ func AddMapRoutes(rg *gin.RouterGroup, mapColl *mongo.Collection) {
 	})
 
 	rg.POST("", func(c *gin.Context) {
-		var mapData *Map
+		var mapData *models.Map
 		c.ShouldBind(&mapData)
 		loginId := c.MustGet("loginId").(int)
 		mapData.Author = loginId
+		fmt.Printf("id:%s", loginId)
 
 		res, err := mapColl.InsertOne(context.TODO(), mapData)
 		if err != nil {
