@@ -17,7 +17,7 @@ func GetUserData(rg *gin.RouterGroup, userColl *mongo.Collection) {
 			bson.D{{"id", loginId}},
 		).Decode(&result)
 		if err != nil {
-			c.JSON(200, gin.H{"error": "no data"})
+			c.JSON(400, gin.H{"error": "no data"})
 			return
 		}
 		c.JSON(200, gin.H{"data": result})

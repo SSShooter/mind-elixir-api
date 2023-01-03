@@ -2,8 +2,6 @@ package routes
 
 import (
 	"context"
-	"fmt"
-	"log"
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
@@ -23,7 +21,7 @@ func AddMapRoutes(rg *gin.RouterGroup, mapColl *mongo.Collection) {
 			bson.D{{"_id", id}, {"author", loginId}},
 		).Decode(&result)
 		if err != nil {
-			c.JSON(200, gin.H{"error": err})
+			c.JSON(400, gin.H{"error": err.Error()})
 			return
 		}
 		c.JSON(200, gin.H{"data": result})
@@ -42,7 +40,7 @@ func AddMapRoutes(rg *gin.RouterGroup, mapColl *mongo.Collection) {
 			update,
 		).Decode(&result)
 		if err != nil {
-			c.JSON(200, gin.H{"error": err, "result": result})
+			c.JSON(400, gin.H{"error": err.Error()})
 			return
 		}
 		c.JSON(200, gin.H{"data": result})
@@ -57,7 +55,7 @@ func AddMapRoutes(rg *gin.RouterGroup, mapColl *mongo.Collection) {
 			bson.D{{"_id", id}, {"author", loginId}},
 		).Decode(&result)
 		if err != nil {
-			c.JSON(200, gin.H{"error": err})
+			c.JSON(400, gin.H{"error": err.Error()})
 			return
 		}
 		c.JSON(200, gin.H{"data": result})
@@ -70,12 +68,12 @@ func AddMapRoutes(rg *gin.RouterGroup, mapColl *mongo.Collection) {
 			bson.D{{"author", loginId}},
 		)
 		if err != nil {
-			c.JSON(200, gin.H{"error": err})
+			c.JSON(400, gin.H{"error": err.Error()})
 			return
 		}
 		var results []bson.M
 		if err = cursor.All(context.TODO(), &results); err != nil {
-			log.Fatal(err)
+			c.JSON(500, gin.H{"error": err.Error()})
 		}
 		c.JSON(200, gin.H{"data": results})
 	})
@@ -85,11 +83,9 @@ func AddMapRoutes(rg *gin.RouterGroup, mapColl *mongo.Collection) {
 		c.ShouldBind(&mapData)
 		loginId := c.MustGet("loginId").(int)
 		mapData.Author = loginId
-		fmt.Printf("id:%s", loginId)
-
 		res, err := mapColl.InsertOne(context.TODO(), mapData)
 		if err != nil {
-			c.JSON(200, gin.H{"error": err})
+			c.JSON(400, gin.H{"error": err.Error()})
 			return
 		}
 		c.JSON(200, gin.H{"data": gin.H{"_id": res.InsertedID}})

@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 
@@ -44,13 +43,11 @@ func getToken(url string) (GithubResp, error) {
 	req.Header.Add("accept", `application/json`)
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Printf("Req failed: %s", err)
 		return GithubResp{}, err
 	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Printf("Reading body failed: %s", err)
 		return GithubResp{}, err
 	}
 	var data GithubResp
@@ -69,7 +66,6 @@ func fetchUserData(token string) (UserData, error) {
 	dataReq.Header.Add("Authorization", "token "+token)
 	dataResp, err := client.Do(dataReq)
 	if err != nil {
-		log.Printf("Req failed: %s", err)
 		return UserData{}, err
 	}
 
@@ -94,7 +90,6 @@ func updateUserData(coll *mongo.Collection, data UserData) error {
 	if err != nil {
 		return err
 	}
-	fmt.Printf("updated document %v", updatedDocument)
 	return nil
 }
 
@@ -120,13 +115,12 @@ func AddOauthRoutes(rg *gin.RouterGroup, userColl *mongo.Collection) {
 
 		session := sessions.Default(c)
 
-		fmt.Print("id:", userData.Id)
 		session.Set("loginId", userData.Id)
 		session.Save()
 
 		err = updateUserData(userColl, userData)
 		if err != nil {
-			c.JSON(200, gin.H{"error": err})
+			c.JSON(400, gin.H{"error": err.Error()})
 			return
 		}
 
