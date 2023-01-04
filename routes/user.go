@@ -8,8 +8,13 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func GetUserData(rg *gin.RouterGroup, userColl *mongo.Collection) {
-	rg.GET("", func(c *gin.Context) {
+// @Summary getUserData
+// @Schemes
+// @Description getUserData
+// @Tags user
+// @Router /api/user [get]
+func getUserData(userColl *mongo.Collection) func(ctx *gin.Context) {
+	return func(c *gin.Context) {
 		loginId := c.MustGet("loginId").(int)
 		var result bson.M
 		err := userColl.FindOne(
@@ -21,5 +26,9 @@ func GetUserData(rg *gin.RouterGroup, userColl *mongo.Collection) {
 			return
 		}
 		c.JSON(200, gin.H{"data": result})
-	})
+	}
+}
+
+func AddUserRoutes(rg *gin.RouterGroup, userColl *mongo.Collection) {
+	rg.GET("", getUserData(userColl))
 }

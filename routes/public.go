@@ -9,8 +9,13 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func AddPublicMapRoutes(rg *gin.RouterGroup, mapColl *mongo.Collection) {
-	rg.GET("", func(c *gin.Context) {
+// @Summary getAllPublicMaps
+// @Schemes
+// @Description getAllPublicMaps
+// @Tags public
+// @Router /api/public [get]
+func getAllPublicMaps(mapColl *mongo.Collection) func(ctx *gin.Context) {
+	return func(c *gin.Context) {
 		cursor, err := mapColl.Find(
 			context.TODO(),
 			bson.D{{"public", true}},
@@ -24,9 +29,17 @@ func AddPublicMapRoutes(rg *gin.RouterGroup, mapColl *mongo.Collection) {
 			c.JSON(500, gin.H{"error": err.Error()})
 		}
 		c.JSON(200, gin.H{"data": results})
-	})
+	}
+}
 
-	rg.GET("/:id", func(c *gin.Context) {
+// @Summary getPublicMap
+// @Schemes
+// @Description getPublicMap
+// @Tags public
+// @Param id path string true "Map ID"
+// @Router /api/public/{id} [get]
+func getPublicMap(mapColl *mongo.Collection) func(ctx *gin.Context) {
+	return func(c *gin.Context) {
 		id, _ := primitive.ObjectIDFromHex(c.Param("id"))
 		var result bson.M
 		err := mapColl.FindOne(
@@ -38,6 +51,10 @@ func AddPublicMapRoutes(rg *gin.RouterGroup, mapColl *mongo.Collection) {
 			return
 		}
 		c.JSON(200, gin.H{"data": result})
-	})
+	}
+}
 
+func AddPublicMapRoutes(rg *gin.RouterGroup, mapColl *mongo.Collection) {
+	rg.GET("", getAllPublicMaps(mapColl))
+	rg.GET("/:id", getPublicMap(mapColl))
 }

@@ -13,9 +13,12 @@ import (
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
+	swaggerfiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
+	"github.com/SSShooter/mind-elixir-backend-go/docs"
 	"github.com/SSShooter/mind-elixir-backend-go/middlewares"
 	"github.com/SSShooter/mind-elixir-backend-go/routes"
 )
@@ -32,6 +35,19 @@ func connectDatabase() (*mongo.Database, error) {
 	return db, nil
 }
 
+// @Summary login
+// @Schemes
+// @Description It will redirect to GitHub login page
+// @Tags auth
+// @Success 200
+// @Router /login [get]
+
+// @Summary logout
+// @Schemes
+// @Description Clear session
+// @Tags auth
+// @Success 200
+// @Router /logout [get]
 func main() {
 	err := godotenv.Load()
 	if err != nil {
@@ -43,6 +59,9 @@ func main() {
 	}
 
 	r := gin.Default()
+
+	docs.SwaggerInfo.BasePath = "/"
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 
 	sessionSecret := os.Getenv("SESSION_SECRET")
 	store := cookie.NewStore([]byte(sessionSecret))
@@ -71,7 +90,7 @@ func main() {
 	api := r.Group("/api")
 	api.Use(middlewares.Auth())
 	user := api.Group("/user")
-	routes.GetUserData(user, db.Collection("users"))
+	routes.AddUserRoutes(user, db.Collection("users"))
 	mapr := api.Group("/map")
 	routes.AddMapRoutes(mapr, db.Collection("maps"))
 

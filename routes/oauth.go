@@ -93,15 +93,20 @@ func updateUserData(coll *mongo.Collection, data UserData) error {
 	return nil
 }
 
-func AddOauthRoutes(rg *gin.RouterGroup, userColl *mongo.Collection) {
-	rg.GET("/redirect", func(c *gin.Context) {
+// @Summary githubAuth
+// @Schemes
+// @Description Github Oauth Callback
+// @Param code query string true "code"
+// @Tags auth
+// @Success 200
+// @Router /oauth/redirect [get]
+func githubAuth(userColl *mongo.Collection) func(c *gin.Context) {
+	return func(c *gin.Context) {
 		code, _ := c.GetQuery("code")
 		clientId := os.Getenv("CLIENT_ID")
 		clientSecret := os.Getenv("CLIENT_SECRET")
 		redirectDomain := os.Getenv("REDIRECT_DOMAIN")
 		url := "https://github.com/login/oauth/access_token?client_id=" + clientId + "&client_secret=" + clientSecret + "&code=" + code
-		fmt.Println(url)
-
 		data, err := getToken(url)
 		if err != nil {
 			c.JSON(200, gin.H{"error": "Can not connect to GitHub"})
@@ -112,19 +117,18 @@ func AddOauthRoutes(rg *gin.RouterGroup, userColl *mongo.Collection) {
 			return
 		}
 		userData, err := fetchUserData(data.Access_token)
-
 		session := sessions.Default(c)
-
 		session.Set("loginId", userData.Id)
 		session.Save()
-
 		err = updateUserData(userColl, userData)
 		if err != nil {
 			c.JSON(400, gin.H{"error": err.Error()})
 			return
 		}
-
 		c.Redirect(301, redirectDomain)
+	}
+}
 
-	})
+func AddOauthRoutes(rg *gin.RouterGroup, userColl *mongo.Collection) {
+	rg.GET("/redirect", githubAuth(userColl))
 }
