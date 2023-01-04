@@ -1,0 +1,105 @@
+info:
+  contact: {}
+paths:
+  /api/map:
+    delete:
+      description: deletePrivateMap
+      parameters:
+      - description: Map ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses: {}
+      summary: deletePrivateMap
+      tags:
+      - map
+    get:
+      description: getAllPrivateMaps
+      responses: {}
+      summary: getAllPrivateMaps
+      tags:
+      - map
+    post:
+      description: createPrivateMap
+      responses: {}
+      summary: createPrivateMap
+      tags:
+      - map
+  /api/map/{id}:
+    get:
+      description: getPrivateMap
+      parameters:
+      - description: Map ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses: {}
+      summary: getPrivateMap
+      tags:
+      - map
+    patch:
+      description: updatePrivateMap
+      parameters:
+      - description: Map ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses: {}
+      summary: updatePrivateMap
+      tags:
+      - map
+  /api/public:
+    get:
+      description: getAllPublicMaps
+      responses: {}
+      summary: getAllPublicMaps
+      tags:
+      - public
+  /api/public/{id}:
+    get:
+      description: getPublicMap
+      parameters:
+      - description: Map ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses: {}
+      summary: getPublicMap
+      tags:
+      - public
+  /api/user:
+    get:
+      description: getUserData
+      responses: {}
+      summary: getUserData
+      tags:
+      - user
+  /logout:
+    get:
+      description: Clear session
+      responses:
+        "200":
+          description: OK
+      summary: logout
+      tags:
+      - auth
+  /oauth/redirect:
+    get:
+      description: Github Oauth Callback
+      parameters:
+      - description: code
+        in: query
+        name: code
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+      summary: githubAuth
+      tags:
+      - auth
+swagger: "2.0"

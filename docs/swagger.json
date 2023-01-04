@@ -1,0 +1,155 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "contact": {}
+    },
+    "paths": {
+        "/api/map": {
+            "get": {
+                "description": "getAllPrivateMaps",
+                "tags": [
+                    "map"
+                ],
+                "summary": "getAllPrivateMaps",
+                "responses": {}
+            },
+            "post": {
+                "description": "createPrivateMap",
+                "tags": [
+                    "map"
+                ],
+                "summary": "createPrivateMap",
+                "responses": {}
+            },
+            "delete": {
+                "description": "deletePrivateMap",
+                "tags": [
+                    "map"
+                ],
+                "summary": "deletePrivateMap",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Map ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/api/map/{id}": {
+            "get": {
+                "description": "getPrivateMap",
+                "tags": [
+                    "map"
+                ],
+                "summary": "getPrivateMap",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Map ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            },
+            "patch": {
+                "description": "updatePrivateMap",
+                "tags": [
+                    "map"
+                ],
+                "summary": "updatePrivateMap",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Map ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/api/public": {
+            "get": {
+                "description": "getAllPublicMaps",
+                "tags": [
+                    "public"
+                ],
+                "summary": "getAllPublicMaps",
+                "responses": {}
+            }
+        },
+        "/api/public/{id}": {
+            "get": {
+                "description": "getPublicMap",
+                "tags": [
+                    "public"
+                ],
+                "summary": "getPublicMap",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Map ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/api/user": {
+            "get": {
+                "description": "getUserData",
+                "tags": [
+                    "user"
+                ],
+                "summary": "getUserData",
+                "responses": {}
+            }
+        },
+        "/logout": {
+            "get": {
+                "description": "Clear session",
+                "tags": [
+                    "auth"
+                ],
+                "summary": "logout",
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/oauth/redirect": {
+            "get": {
+                "description": "Github Oauth Callback",
+                "tags": [
+                    "auth"
+                ],
+                "summary": "githubAuth",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "code",
+                        "name": "code",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        }
+    }
+}
