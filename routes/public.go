@@ -7,6 +7,8 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+
+	"github.com/SSShooter/mind-elixir-backend-go/utils"
 )
 
 // @Summary getAllPublicMaps
@@ -16,19 +18,13 @@ import (
 // @Router /api/public [get]
 func getAllPublicMaps(mapColl *mongo.Collection) func(ctx *gin.Context) {
 	return func(c *gin.Context) {
-		cursor, err := mapColl.Find(
-			context.TODO(),
-			bson.D{{"public", true}},
-		)
+		query := bson.M{"public": true}
+		results, err := utils.GetPaginatedResults(c, mapColl, query)
 		if err != nil {
 			c.JSON(400, gin.H{"error": err.Error()})
 			return
 		}
-		var results []bson.M
-		if err = cursor.All(context.TODO(), &results); err != nil {
-			c.JSON(500, gin.H{"error": err.Error()})
-		}
-		c.JSON(200, gin.H{"data": results})
+		c.JSON(200, results)
 	}
 }
 

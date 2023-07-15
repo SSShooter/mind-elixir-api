@@ -2,6 +2,7 @@ package routes
 
 import (
 	"context"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
@@ -9,6 +10,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 
 	"github.com/SSShooter/mind-elixir-backend-go/models"
+	"github.com/SSShooter/mind-elixir-backend-go/utils"
 )
 
 // @Summary getAllPrivateMaps
@@ -19,19 +21,13 @@ import (
 func getAllPrivateMaps(mapColl *mongo.Collection) func(ctx *gin.Context) {
 	return func(c *gin.Context) {
 		loginId := c.MustGet("loginId").(int)
-		cursor, err := mapColl.Find(
-			context.TODO(),
-			bson.D{{"author", loginId}},
-		)
+		query := bson.M{"author": loginId}
+		results, err := utils.GetPaginatedResults(c, mapColl, query)
 		if err != nil {
 			c.JSON(400, gin.H{"error": err.Error()})
 			return
 		}
-		var results []bson.M
-		if err = cursor.All(context.TODO(), &results); err != nil {
-			c.JSON(500, gin.H{"error": err.Error()})
-		}
-		c.JSON(200, gin.H{"data": results})
+		c.JSON(200, results)
 	}
 }
 
@@ -44,6 +40,8 @@ func createPrivateMap(mapColl *mongo.Collection) func(ctx *gin.Context) {
 	return func(c *gin.Context) {
 		var mapData *models.Map
 		c.ShouldBind(&mapData)
+		mapData.Date = time.Now()
+		mapData.UpdateAt = time.Now()
 		loginId := c.MustGet("loginId").(int)
 		mapData.Author = loginId
 		res, err := mapColl.InsertOne(context.TODO(), mapData)
