@@ -66,7 +66,7 @@ func getPrivateMap(mapColl *mongo.Collection) func(ctx *gin.Context) {
 		var result bson.M
 		err := mapColl.FindOne(
 			context.TODO(),
-			bson.D{{"_id", id}, {"author", loginId}},
+			bson.M{"_id": id, "author": loginId},
 		).Decode(&result)
 		if err != nil {
 			c.JSON(400, gin.H{"error": err.Error()})
@@ -89,10 +89,10 @@ func updatePrivateMap(mapColl *mongo.Collection) func(ctx *gin.Context) {
 		c.ShouldBind(&data)
 		loginId := c.MustGet("loginId").(int)
 		var result bson.M
-		update := bson.D{{"$set", data}}
+		update := bson.M{"$set": data}
 		err := mapColl.FindOneAndUpdate(
 			context.TODO(),
-			bson.D{{"_id", id}, {"author", loginId}},
+			bson.M{"_id": id, "author": loginId},
 			update,
 		).Decode(&result)
 		if err != nil {
@@ -116,7 +116,7 @@ func deletePrivateMap(mapColl *mongo.Collection) func(ctx *gin.Context) {
 		var result bson.M
 		err := mapColl.FindOneAndDelete(
 			context.TODO(),
-			bson.D{{"_id", id}, {"author", loginId}},
+			bson.M{"_id": id, "author": loginId},
 		).Decode(&result)
 		if err != nil {
 			c.JSON(400, gin.H{"error": err.Error()})

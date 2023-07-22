@@ -78,8 +78,8 @@ func fetchUserData(token string) (UserData, error) {
 
 func updateUserData(coll *mongo.Collection, data UserData) error {
 	opts := options.FindOneAndUpdate().SetUpsert(true)
-	filter := bson.D{{"id", data.Id}}
-	update := bson.D{{"$set", data}}
+	filter := bson.M{"id": data.Id}
+	update := bson.M{"$set": data}
 	var updatedDocument bson.M
 	err := coll.FindOneAndUpdate(
 		context.TODO(),
