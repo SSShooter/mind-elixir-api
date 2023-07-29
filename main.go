@@ -21,6 +21,7 @@ import (
 	"github.com/SSShooter/mind-elixir-backend-go/docs"
 	"github.com/SSShooter/mind-elixir-backend-go/middlewares"
 	"github.com/SSShooter/mind-elixir-backend-go/routes"
+	"github.com/SSShooter/mind-elixir-backend-go/routes/oauth"
 )
 
 func connectDatabase() (*mongo.Database, error) {
@@ -74,7 +75,7 @@ func main() {
 	})
 	r.Use(sessions.Sessions("mindelixir", store))
 
-	AllowOrigin := os.Getenv("ALLOW_ORIGIN")
+	AllowOrigin := os.Getenv("FRONTEND_URL")
 	r.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{AllowOrigin},
 		AllowMethods:     []string{"GET", "POST", "DELETE", "PUT", "PATCH"},
@@ -84,8 +85,8 @@ func main() {
 		MaxAge:           12 * time.Hour,
 	}))
 
-	oauth := r.Group("/oauth")
-	routes.AddOauthRoutes(oauth, db.Collection("users"))
+	oauthGroup := r.Group("/oauth")
+	oauth.AddOauthRoutes(oauthGroup, db.Collection("users"))
 
 	api := r.Group("/api")
 	api.Use(middlewares.Auth())
@@ -99,10 +100,6 @@ func main() {
 
 	routes.AddPublicMapRoutes(public, db.Collection("maps"))
 
-	r.GET("/login", func(c *gin.Context) {
-		loginUrl := os.Getenv("LOGIN_URL")
-		c.Redirect(301, loginUrl)
-	})
 	r.GET("/logout", func(c *gin.Context) {
 		session := sessions.Default(c)
 		session.Set("loginId", nil)

@@ -20,7 +20,7 @@ import (
 // @Router /api/map [get]
 func getAllPrivateMaps(mapColl *mongo.Collection) func(ctx *gin.Context) {
 	return func(c *gin.Context) {
-		loginId := c.MustGet("loginId").(int)
+		loginId := c.MustGet("loginId").(string)
 		query := bson.M{"author": loginId}
 		results, err := utils.GetPaginatedResults(c, mapColl, query)
 		if err != nil {
@@ -42,7 +42,7 @@ func createPrivateMap(mapColl *mongo.Collection) func(ctx *gin.Context) {
 		c.ShouldBind(&mapData)
 		mapData.Date = time.Now()
 		mapData.UpdateAt = time.Now()
-		loginId := c.MustGet("loginId").(int)
+		loginId := c.MustGet("loginId").(string)
 		mapData.Author = loginId
 		res, err := mapColl.InsertOne(context.TODO(), mapData)
 		if err != nil {
@@ -62,7 +62,7 @@ func createPrivateMap(mapColl *mongo.Collection) func(ctx *gin.Context) {
 func getPrivateMap(mapColl *mongo.Collection) func(ctx *gin.Context) {
 	return func(c *gin.Context) {
 		id, _ := primitive.ObjectIDFromHex(c.Param("id"))
-		loginId := c.MustGet("loginId").(int)
+		loginId := c.MustGet("loginId").(string)
 		var result bson.M
 		err := mapColl.FindOne(
 			context.TODO(),
@@ -87,7 +87,7 @@ func updatePrivateMap(mapColl *mongo.Collection) func(ctx *gin.Context) {
 		id, _ := primitive.ObjectIDFromHex(c.Param("id"))
 		var data map[string]interface{}
 		c.ShouldBind(&data)
-		loginId := c.MustGet("loginId").(int)
+		loginId := c.MustGet("loginId").(string)
 		var result bson.M
 		update := bson.M{"$set": data}
 		err := mapColl.FindOneAndUpdate(
@@ -112,7 +112,7 @@ func updatePrivateMap(mapColl *mongo.Collection) func(ctx *gin.Context) {
 func deletePrivateMap(mapColl *mongo.Collection) func(ctx *gin.Context) {
 	return func(c *gin.Context) {
 		id, _ := primitive.ObjectIDFromHex(c.Param("id"))
-		loginId := c.MustGet("loginId").(int)
+		loginId := c.MustGet("loginId").(string)
 		var result bson.M
 		err := mapColl.FindOneAndDelete(
 			context.TODO(),

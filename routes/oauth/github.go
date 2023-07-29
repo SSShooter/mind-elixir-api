@@ -1,18 +1,15 @@
-package routes
+package oauth
 
 import (
-	"context"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
+	"strconv"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
-	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type GithubResp struct {
@@ -25,7 +22,7 @@ type GithubResp struct {
 	Scope        string
 }
 
-type UserData struct {
+type GithubUserdata struct {
 	Id        int    `json:"id"`
 	NodeId    string `json:"node_id"`
 	AvatarUrl string `json:"avatar_url"`
@@ -53,44 +50,24 @@ func getToken(url string) (GithubResp, error) {
 	var data GithubResp
 	err = json.Unmarshal(body, &data)
 	if err != nil {
-		fmt.Println("error:", err)
 		return GithubResp{}, err
 	}
-	fmt.Printf("%s", data.Access_token)
 	return data, nil
 }
 
-func fetchUserData(token string) (UserData, error) {
+func fetchUserData(token string) (GithubUserdata, error) {
 	client := &http.Client{}
 	dataReq, err := http.NewRequest("GET", "https://api.github.com/user", nil)
 	dataReq.Header.Add("Authorization", "token "+token)
 	dataResp, err := client.Do(dataReq)
 	if err != nil {
-		return UserData{}, err
+		return GithubUserdata{}, err
 	}
 
-	var data UserData
+	var data GithubUserdata
 
 	json.NewDecoder(dataResp.Body).Decode(&data)
-	fmt.Printf("\ndata:%+v\n", data)
 	return data, nil
-}
-
-func updateUserData(coll *mongo.Collection, data UserData) error {
-	opts := options.FindOneAndUpdate().SetUpsert(true)
-	filter := bson.M{"id": data.Id}
-	update := bson.M{"$set": data}
-	var updatedDocument bson.M
-	err := coll.FindOneAndUpdate(
-		context.TODO(),
-		filter,
-		update,
-		opts,
-	).Decode(&updatedDocument)
-	if err != nil {
-		return err
-	}
-	return nil
 }
 
 // @Summary githubAuth
@@ -105,7 +82,6 @@ func githubAuth(userColl *mongo.Collection) func(c *gin.Context) {
 		code, _ := c.GetQuery("code")
 		clientId := os.Getenv("CLIENT_ID")
 		clientSecret := os.Getenv("CLIENT_SECRET")
-		redirectDomain := os.Getenv("REDIRECT_DOMAIN")
 		url := "https://github.com/login/oauth/access_token?client_id=" + clientId + "&client_secret=" + clientSecret + "&code=" + code
 		data, err := getToken(url)
 		if err != nil {
@@ -117,18 +93,23 @@ func githubAuth(userColl *mongo.Collection) func(c *gin.Context) {
 			return
 		}
 		userData, err := fetchUserData(data.Access_token)
+
 		session := sessions.Default(c)
-		session.Set("loginId", userData.Id)
+		session.Set("loginId", strconv.Itoa(userData.Id))
 		session.Save()
 		err = updateUserData(userColl, userData)
 		if err != nil {
 			c.JSON(400, gin.H{"error": err.Error()})
 			return
 		}
-		c.Redirect(301, redirectDomain)
+		frontendUrl := os.Getenv("FRONTEND_URL") // 写在外面会读不到，可能是因为 godotenv 还没把他读进来
+		c.Redirect(301, frontendUrl)
 	}
 }
 
-func AddOauthRoutes(rg *gin.RouterGroup, userColl *mongo.Collection) {
-	rg.GET("/redirect", githubAuth(userColl))
+func githubLogin(c *gin.Context) {
+	clientId := os.Getenv("CLIENT_ID")
+	backendUrl := os.Getenv("BACKEND_URL")
+	loginUrl := "https://github.com/login/oauth/authorize?client_id=" + clientId + "&redirect_uri=" + backendUrl + "/oauth/github/redirect"
+	c.Redirect(301, loginUrl)
 }

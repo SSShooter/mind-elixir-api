@@ -15,7 +15,7 @@ import (
 // @Router /api/user [get]
 func getUserData(userColl *mongo.Collection) func(ctx *gin.Context) {
 	return func(c *gin.Context) {
-		loginId := c.MustGet("loginId").(int)
+		loginId := c.MustGet("loginId").(string)
 		var result bson.M
 		err := userColl.FindOne(
 			context.TODO(),
