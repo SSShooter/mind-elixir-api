@@ -18,10 +18,12 @@ import (
 // @Description getAllPrivateMaps
 // @Tags map
 // @Router /api/map [get]
+// @Param name query string false "Map Name"
 func getAllPrivateMaps(mapColl *mongo.Collection) func(ctx *gin.Context) {
 	return func(c *gin.Context) {
 		loginId := c.MustGet("loginId").(string)
-		query := bson.M{"author": loginId}
+		name := c.Query("name")
+		query := bson.M{"author": loginId, "name": bson.M{"$regex": name, "$options": "i"}}
 		results, err := utils.GetPaginatedResults(c, mapColl, query)
 		if err != nil {
 			c.JSON(400, gin.H{"error": err.Error()})

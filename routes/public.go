@@ -16,9 +16,11 @@ import (
 // @Description getAllPublicMaps
 // @Tags public
 // @Router /api/public [get]
+// @Param name query string false "Map Name"
 func getAllPublicMaps(mapColl *mongo.Collection) func(ctx *gin.Context) {
 	return func(c *gin.Context) {
-		query := bson.M{"public": true}
+		name := c.Query("name")
+		query := bson.M{"public": true, "name": bson.M{"$regex": name, "$options": "i"}}
 		results, err := utils.GetPaginatedResults(c, mapColl, query)
 		if err != nil {
 			c.JSON(400, gin.H{"error": err.Error()})
@@ -49,6 +51,8 @@ func getPublicMap(mapColl *mongo.Collection) func(ctx *gin.Context) {
 		c.JSON(200, gin.H{"data": result})
 	}
 }
+
+// TODO add pw protection
 
 func AddPublicMapRoutes(rg *gin.RouterGroup, mapColl *mongo.Collection) {
 	rg.GET("", getAllPublicMaps(mapColl))
