@@ -22,6 +22,7 @@ func GetPaginatedResults(c *gin.Context, collection *mongo.Collection, query bso
 	options := options.Find()
 	options.SetSkip(int64((pagination.Page - 1) * pagination.PageSize))
 	options.SetLimit(int64(pagination.PageSize))
+	options.SetSort(bson.D{{Key: "_id", Value: -1}})
 
 	cursor, err := collection.Find(context.Background(), query, options)
 	if err != nil {
